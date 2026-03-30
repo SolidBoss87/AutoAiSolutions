@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="pt-PT"> 
+<head> 
+    <meta charset="UTF-8"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <title>Serviços | AutoAI Solutions</title> 
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"> 
+    <style> 
+        :root { 
+            --primary:#0a2e5f; 
+            --secondary:#0055a5; 
+            --accent:#ffcc00; 
+            --text:#1a1a1a; 
+            --bg:#f5f7fa; 
+            --card:#fff; 
+            --shadow:rgba(0,0,0,0.08); 
+            --padding:30px; 
+            --radius:10px; 
+        } 
+        *{margin:0;padding:0;box-sizing:border-box;font-family:'Inter',sans-serif;} 
+        body{background:var(--bg);color:var(--text);line-height:1.6;} 
+        
+        /* Header */ 
+        header{background:var(--primary);color:#fff;padding:20px 10%;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;} 
+        header h1{font-weight:700;font-size:1.8rem;} 
+        nav a{color:#fff;margin-left:20px;text-decoration:none;font-weight:600;transition:color 0.3s;} 
+        nav a:hover{color:var(--accent);} 
+        
+        /* Page Header */ 
+        .page-header{background:linear-gradient(90deg,var(--primary) 0%,var(--secondary) 100%);color:#fff;padding:60px 10%;text-align:center;} 
+        .page-header h1{font-size:2.5rem;margin-bottom:10px;} 
+        .page-header p{font-size:1.2rem;opacity:0.9;} 
+        
+        /* Gallery Section */ 
+        .gallery-section{padding:var(--padding) 10%;} 
+        .gallery-grid{display:grid;gap:30px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));justify-items:center;margin-top:40px;} 
+        
+        /* Gallery Card */ 
+        .gallery-card{background:var(--card);border-radius:var(--radius);overflow:hidden;box-shadow:0 8px 20px var(--shadow);transition:transform 0.3s,box-shadow 0.3s;} 
+        .gallery-card:hover{transform:translateY(-5px);box-shadow:0 12px 30px rgba(0,0,0,0.15);} 
+        
+        /* Image Container with Cursor */
+        .image-container {
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+        
+        .gallery-card img{width:100%;height:200px;object-fit:cover;transition:transform 0.3s;} 
+        .image-container:hover img{transform:scale(1.05);} 
+        
+        /* Zoom Icon Overlay */
+        .zoom-icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(10, 46, 95, 0.8);
+            color: #fff;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+        
+        .image-container:hover .zoom-icon {
+            opacity: 1;
+        }
+        
+        .gallery-card-content{padding:25px;} 
+        .gallery-card h3{font-size:1.4rem;margin-bottom:10px;color:var(--primary);} 
+        .gallery-card p{color:#555;font-size:0.95rem;line-height:1.7;} 
+        
+        /* Back Button */ 
+        .back-btn{display:inline-block;background:var(--secondary);color:#fff;padding:12px 30px;text-decoration:none;border-radius:6px;margin-top:40px;transition:background 0.3s;font-weight:600;} 
+        .back-btn:hover{background:#003f7d;} 
+        
+        /* Footer */ 
+        footer{background:var(--primary);color:#fff;text-align:center;padding:30px 10%;margin-top:50px;} 
+        
+        /* ============================================
+           LIGHTBOX / MODAL STYLES - FIXED
+           ============================================ */
+        
+        .lightbox-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000; /* Higher z-index */
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        
+        .lightbox-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        /* Close Button - FIXED POSITIONING */
+        .lightbox-close {
+            position: fixed;
+            top: 25px;
+            right: 25px;
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.8rem;
+            line-height: 1;
+            transition: all 0.3s ease;
+            z-index: 2010; /* Above everything */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        
+        .lightbox-close:hover {
+            background: var(--secondary);
+            transform: rotate(90deg) scale(1.1);
+        }
+        
+        /* Navigation Arrows - FIXED POSITIONING */
+        .lightbox-nav {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(10, 46, 95, 0.9);
+            color: #fff;
+            border: none;
+            padding: 20px 25px;
+            cursor: pointer;
+            font-size: 2rem;
+            transition: all 0.3s ease;
+            z-index: 2010; /* Above everything */
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        
+        .lightbox-nav:hover {
+            background: var(--secondary);
+            transform: translateY(-50%) scale(1.1);
+        }
+        
+        .lightbox-prev {
+            left: 20px;
+        }
+        
+        .lightbox-next {
+            right: 20px;
+        }
+        
+        /* Lightbox Content */
+        .lightbox-content {
+            position: relative;
+            max-width: 95%;
+            max-height: 95vh;
+            padding: 20px;
+            z-index: 2005;
+        }
+        
+        .lightbox-image {
+            max-width: 100%;
+            max-height: calc(100vh - 80px);
+            width: auto;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5);
+            animation: zoomIn 0.3s ease;
+        }
+        
+        @keyframes zoomIn {
+            from {
+                transform: scale(0.9);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        
+        /* Image Caption */
+        .lightbox-caption {
+            position: absolute;
+            bottom: -50px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            color: #fff;
+            font-size: 1rem;
+            padding: 10px;
+        }
+        
+        @media(max-width:900px){ 
+            header{flex-wrap:wrap;} 
+            nav{width:100%;margin-top:15px;display:flex;justify-content:center;font-size:0.9rem;} 
+            .page-header h1{font-size:2rem;}
+            
+            /* Mobile Lightbox Adjustments */
+            .lightbox-nav {
+                padding: 15px 20px;
+                font-size: 1.5rem;
+            }
+            .lightbox-prev { left: 10px; }
+            .lightbox-next { right: 10px; }
+        } 
+        
+        @media(max-width:600px){ 
+            .lightbox-content { padding: 10px; }
+            .lightbox-image { max-height: calc(100vh - 120px); }
+            .lightbox-caption { font-size: 0.85rem; bottom: -70px; }
+            
+            /* Mobile button adjustments */
+            .lightbox-close {
+                top: 15px;
+                right: 15px;
+                width: 40px;
+                height: 40px;
+                font-size: 1.5rem;
+            }
+        } 
+    </style> 
+</head> 
+<body> 
+    <header> 
+        <h1>AutoAI Solutions</h1> 
+        <nav id="nav"> 
+            <a href="index.html">Início</a> 
+            <a href="servicos.html" style="color:var(--accent);">Serviços</a> 
+            <a href="index.html#habilitacoes">Habilitações</a>
+            <a href="index.html#testimonials">Depoimentos</a> 
+            <a href="index.html#contact">Contato</a> 
+        </nav> 
+    </header> 
+    
+    <div class="page-header"> 
+        <h1>Nossos Serviços</h1> 
+        <p>Soluções completas de automação e inteligência artificial para o seu negócio</p> 
+    </div> 
+    
+    <section class="gallery-section"> 
+        <div class="gallery-grid"> 
+<!-- Service 1 - IMPROVED -->
+<div class="gallery-card"> 
+    <div class="image-container" onclick="openLightbox(this)">
+        <img src="1.png?auto=format&fit=crop&w=600&q=80" alt="Automação de Fluxos: Fábrica de Conteúdo AI 24/7">
+        <span class="zoom-icon">🔍</span>
+    </div> 
+    <div class="gallery-card-content"> 
+        <h3>Automação de Vídeos Narrativos</h3> 
+        <p><strong>Fábrica de Conteúdo AI 24/7:</strong> Do conceito ao vídeo publicado em minutos. Nossa plataforma automatizada utiliza 6 agentes IA especializados que trabalham em harmonia para criar scripts, gerar imagens personalizadas, compor música original, produzir narração profissional e publicar automaticamente.</p>
+        <div style="margin-top:15px; padding:12px; background:#f8fafc; border-radius:6px; font-size:0.85rem;">
+            <strong>🚀 Benefícios:</strong><br>
+            📊 100% Automatizado – Sem edição manual<br>
+            📝 Produção Escalável – Vídeos ilimitados<br>
+            🎨 Qualidade Consistente – Voz da marca preservada<br>
+            ✍️ Multi-Plataforma – YouTube, redes sociais e mais
+        </div>
+    </div> 
+</div> 
+            
+<!-- Service 2 - IMPROVED -->
+<div class="gallery-card"> 
+    <div class="image-container" onclick="openLightbox(this)">
+        <img src="2.png?auto=format&fit=crop&w=600&q=80" alt="AI Agents Inteligentes: Agregação e Distribuição de Conteúdo Automatizada">
+        <span class="zoom-icon">🔍</span>
+    </div> 
+    <div class="gallery-card-content"> 
+        <h3>Automação de Notícias</h3> 
+        <p><strong>Agregação Inteligente de Conteúdo 24/7:</strong> Um sistema autônomo que monitora múltiplas fontes de notícias e canais do YouTube, resume inteligentemente as atualizações mais importantes usando IA, e entrega digests personalizados diretamente para suas comunidades no Discord — tudo com um único clique.</p>
+        <div style="margin-top:15px; padding:12px; background:#f8fafc; border-radius:6px; font-size:0.85rem;">
+            <strong>🚀 Funcionalidades:</strong><br>
+            📰 Multi-Source Monitoring – Rastreie feeds RSS ilimitados simultaneamente<br>
+            🤖 AI Summarization – Resumos concisos e relevantes com OpenAI<br>
+            🎯 Smart Filtering – Apenas o conteúdo relevante chega ao seu público<br>
+            🚀 Instant Distribution – Atualizações automáticas para múltiplos servidores Discord
+        </div>
+    </div> 
+</div> 
+            
+<!-- Service 3 - IMPROVED -->
+<div class="gallery-card"> 
+    <div class="image-container" onclick="openLightbox(this)">
+        <img src="3.png?auto=format&fit=crop&w=600&q=80" alt="Processamento de Linguagem: Agente de Suporte IA 24/7">
+        <span class="zoom-icon">🔍</span>
+    </div> 
+    <div class="gallery-card-content"> 
+        <h3>Automação de Suporte</h3> 
+        <p><strong>Agente de Suporte Inteligente 24/7:</strong> Um chatbot autônomo que responde automaticamente a perguntas de visitantes do seu site. Utiliza OpenAI como cérebro para entender linguagem natural, módulo de memória para manter contexto em conversas multi-turno, calculadora integrada para cálculos matemáticos e ferramenta Wikipedia para respostas factuais.</p>
+        <div style="margin-top:15px; padding:12px; background:#f8fafc; border-radius:6px; font-size:0.85rem;">
+            <strong>🚀 Benefícios:</strong><br>
+            🕐 24/7 Availability – Atendimento global ininterrupto<br>
+            ⚡ Instant Responses – Reduz bounce rates do site<br>
+            🔢 Math and Facts – Cálculos e fatos autônomos<br>
+            💾 Context Memory – Diálogo natural com memória<br>
+            📊 Auto Logging – Registro automático no Google Sheets
+        </div>
+    </div> 
+</div>
+
+            
+<!-- Service 4 - IMPROVED (J.A.R.V.I.S. Style) -->
+<div class="gallery-card"> 
+    <div class="image-container" onclick="openLightbox(this)">
+        <img src="4.png?auto=format&fit=crop&w=600&q=80" alt="Integração de Sistemas: Seu J.A.R.V.I.S. Pessoal - Assistente IA que Faz Tudo">
+        <span class="zoom-icon">🔍</span>
+    </div> 
+    <div class="gallery-card-content"> 
+        <h3>Automação de Assistência</h3> 
+        <p><strong>Seu J.A.R.V.I.S. Pessoal - Assistente IA que Faz Tudo:</strong> Construa seu próprio assistente inteligente que conversa naturalmente via Telegram, busca informações em tempo real na web, controla sua casa inteligente e servidores Docker, gerencia contatos automaticamente durante conversas, realiza cálculos matemáticos instantâneos e responde com voz natural.</p>
+        <div style="margin-top:15px; padding:12px; background:#f8fafc; border-radius:6px; font-size:0.85rem;">
+            <strong>🚀 Funcionalidades:</strong><br>
+            🤖 Conversação Natural – Lembra preferências e histórico<br>
+            🔍 Busca Web em Tempo Real – Notícias, fatos, informações<br>
+            📱 Controle de Casa Inteligente – Docker, NAS, Jellyfin<br>
+            💼 Gestão de Contatos Automática – Durante conversas<br>
+            🧮 Calculadora Integrada – Cálculos instantâneos<br>
+            🎙️ Respostas em Voz Natural – Áudio gerado automaticamente
+        </div>
+    </div> 
+</div>
+
+            
+<!-- Service 5 - ENHANCED DATA ANALYSIS -->
+<div class="gallery-card"> 
+    <div class="image-container" onclick="openLightbox(this)">
+        <img src="5.png?auto=format&fit=crop&w=600&q=80" alt="Análise de Dados: Transforme Formulários em Insights Inteligentes">
+        <span class="zoom-icon">🔍</span>
+    </div> 
+    <div class="gallery-card-content"> 
+        <h3>Automação de Negócio</h3> 
+        <p><strong>Seu Formulário de Contato, Supercharged:</strong> Transforme cada submissão em inteligência de negócios. Nossa IA processa linguagem natural para entender intenções do cliente, extrai sentimentos e necessidades, cria registros CRM automaticamente, e gera insights acionáveis — tudo sem intervenção manual.</p>
+        <div style="margin-top:15px; padding:12px; background:#f8fafc; border-radius:6px; font-size:0.85rem;">
+            <strong>🚀 Benefícios:</strong><br>
+            🧠 NLU Avançado – Compreende intenções e sentimentos<br>
+            💾 Memória Contextual – Personaliza follow-ups automáticos<br>
+            📊 CRM Automático – Zero entrada manual de dados<br>
+            ⚡ Processamento Instantâneo – Respostas em tempo real<br>
+            🔗 Webhook Universal – Integra com qualquer plataforma<br>
+            🕐 24/7 Availability – Nunca perca um lead valioso
+        </div>
+    </div> 
+</div>
+          <!-- Service 6 - ENHANCED BASED ON PIPELINE TEXT -->
+<div class="gallery-card"> 
+    <div class="image-container" onclick="openLightbox(this)">
+        <img src="6.png?auto=format&fit=crop&w=600&q=80" alt="Pipeline de Criação de Conteúdo: Do Input ao YouTube em Automático">
+        <span class="zoom-icon">🔍</span>
+    </div> 
+    <div class="gallery-card-content"> 
+        <h3>Automação de Vídeos Profissionais</h3> 
+        <p><strong>Fábrica de Vídeos Inteligente 24/7:</strong> Transforme ideias simples em vídeos profissionais publicados automaticamente no YouTube. Nossa pipeline automatizada aceita uploads de imagens ou formulários, processa através de múltiplos agentes IA especializados (vídeo, áudio, texto), e entrega conteúdo pronto para publicação — tudo sem intervenção manual.</p>
+        <div style="margin-top:15px; padding:12px; background:#f8fafc; border-radius:6px; font-size:0.85rem;">
+            <strong>🚀 Funcionalidades:</strong><br>
+            📥 Input Flexível – Uploads de imagem ou formulários com análise<br>
+            🤖 Multi-Agent Orchestration – Vídeo, áudio e texto em paralelo<br>
+            🎬 IM2VI Technology – Conversão imagem para vídeo inteligente<br>
+            ⚡ 60FPS Upscaling – Qualidade profissional automática<br>
+            🎵 Audio Original – Trilhas sonoras compostas por IA<br>
+            📤 YouTube Direct Publish – Upload automático com metadata otimizado<br>
+            💰 Zero Manual Work – Do input ao YouTube em um fluxo único
+        </div>
+    </div> 
+</div>
+        </div> 
+        
+        <div style="text-align:center;"> 
+            <a href="index.html" class="back-btn">← Voltar ao Início</a> 
+        </div> 
+    </section> 
+    
+    <!-- LIGHTBOX MODAL -->
+    <div class="lightbox-overlay" id="lightboxOverlay">
+        <button class="lightbox-close" onclick="closeLightbox()" aria-label="Fechar">&times;</button>
+        
+        <button class="lightbox-nav lightbox-prev" onclick="navigateImage(-1)" aria-label="Imagem anterior">❮</button>
+        
+        <div class="lightbox-content">
+            <img src="" alt="" class="lightbox-image" id="lightboxImage">
+            <p class="lightbox-caption" id="lightboxCaption"></p>
+        </div>
+        
+        <button class="lightbox-nav lightbox-next" onclick="navigateImage(1)" aria-label="Próxima imagem">❯</button>
+    </div> 
+    
+    <footer> 
+        <p>&copy; 2025 AutoAI Solutions. Todos os direitos reservados.</p> 
+    </footer> 
+    
+    <!-- JavaScript for Lightbox Functionality -->
+    <script>
+        // Get all image containers
+        const imageContainers = document.querySelectorAll('.image-container');
+        let currentIndex = 0;
+        
+        // Open lightbox with specific image
+        function openLightbox(container) {
+            const img = container.querySelector('img');
+            const altText = img.alt;
+            
+            // Set current index based on clicked image
+            currentIndex = Array.from(imageContainers).indexOf(container);
+            
+            // Update lightbox content
+            document.getElementById('lightboxImage').src = img.src;
+            document.getElementById('lightboxCaption').textContent = altText;
+            
+            // Show overlay
+            const overlay = document.getElementById('lightboxOverlay');
+            overlay.classList.add('active');
+            
+            // Prevent body scroll
+            document.body.style.overflow = 'hidden';
+        }
+        
+        // Close lightbox
+        function closeLightbox() {
+            const overlay = document.getElementById('lightboxOverlay');
+            overlay.classList.remove('active');
+            
+            // Restore body scroll
+            document.body.style.overflow = '';
+        }
+        
+        // Navigate between images
+        function navigateImage(direction) {
+            currentIndex += direction;
+            
+            // Loop around if at edges
+            if (currentIndex < 0) {
+                currentIndex = imageContainers.length - 1;
+            } else if (currentIndex >= imageContainers.length) {
+                currentIndex = 0;
+            }
+            
+            const container = imageContainers[currentIndex];
+            const img = container.querySelector('img');
+            
+            // Update lightbox content with fade effect
+            const lightboxImage = document.getElementById('lightboxImage');
+            const lightboxCaption = document.getElementById('lightboxCaption');
+            
+            lightboxImage.style.opacity = '0';
+            
+            setTimeout(() => {
+                lightboxImage.src = img.src;
+                lightboxCaption.textContent = img.alt;
+                lightboxImage.style.opacity = '1';
+            }, 200);
+        }
+        
+        // Close on overlay click (outside image)
+        document.getElementById('lightboxOverlay').addEventListener('click', function(e) {
+            if (e.target === this || e.target.classList.contains('lightbox-content')) {
+                closeLightbox();
+            }
+        });
+        
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            const overlay = document.getElementById('lightboxOverlay');
+            
+            if (!overlay.classList.contains('active')) return;
+            
+            switch(e.key) {
+                case 'Escape':
+                    closeLightbox();
+                    break;
+                case 'ArrowLeft':
+                    navigateImage(-1);
+                    break;
+                case 'ArrowRight':
+                    navigateImage(1);
+                    break;
+            }
+        });
+        
+        // Add transition for image opacity changes
+        document.getElementById('lightboxImage').style.transition = 'opacity 0.2s ease';
+    </script> 
+</body> 
+</html>
